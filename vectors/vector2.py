@@ -36,6 +36,9 @@ class Vector2:
     def __rmul__(self, s: float):
         return self.__mul__(s)
     
+    def __truediv__(self, s: float):
+        return Vector2(self.x/s, self.y/s)
+    
     def __imul__(self, s: float):
         self.x *= s
         self.y *= s

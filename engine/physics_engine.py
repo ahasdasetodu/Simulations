@@ -93,5 +93,78 @@ class PhysicsEngine_v0(BasePhysicsEngine):
         # position update
         ball.pos +=ball.vel * self.dt
 
+class PhysicsEngine_v1(BasePhysicsEngine):
+    def __init__(self,
+        gravity: Vector2 = Vector2(0.0, 0.0),
+        dt: float = 1.0 / 60.0,
+        center: Vector2 = Vector2(),
+        wire_radius = 100
+    ):
+        self.gravity = gravity
+        self.dt = dt
+        self.paused = False
+        self.center = center
+        self.wire_radius = wire_radius
+
+    
+    def simulate(self, scene: Scene,  events: dict):
+        if self.paused:
+            return
+
+        for i in range(len(scene.balls)):
+            ball1 = scene.balls[i]                
+            self.simulate_object(ball1)
+            for j in range(i + 1, len(scene.balls)):
+                ball2 = scene.balls[j]
+                self.handle_ball_collision(ball1, ball2)
+            #self.handle_wall_collision(ball1, scene.world_size)
+    
+    def simulate_object(self,ball):
+        # velocity change from gravity
+        ball.vel += self.gravity * self.dt
+        tmp = Vector2()
+        tmp.set(ball.pos)
+        # position update
+        ball.pos +=ball.vel * self.dt
+        self.satisfy_constraint(ball.pos)
+        ball.vel = (ball.pos - tmp)/self.dt
+    
+    def satisfy_constraint(self,pos):
+        dir = Vector2()
+        dir = pos - self.center
+        length = dir.length()
+        if length == 0:
+            return
+        dir *= 1.0/length
+        lbd = self.wire_radius - length
+        pos += lbd*dir
+    
+    def handle_ball_collision(self, ball1, ball2):
+        dir = Vector2()
+        dir = ball2.pos - ball1.pos
+        d = dir.length()
+        if d == 0.0 or d > ball1.radius + ball2.radius:
+            return
+
+        # normalize
+        dir *= 1.0 / d
+
+        corr = (ball1.radius + ball2.radius - d) / 2.0
+        ball1.pos += -corr*dir
+        ball2.pos += corr*dir
+
+        v1 = ball1.vel.dot(dir)
+        v2 = ball2.vel.dot(dir)
+
+        m1 = ball1.mass
+        m2 = ball2.mass
+
+        # 1D collision resolution along dir
+        newV1 = (m1 * v1 + m2 * v2 - m2 * (v1 - v2)) / (m1 + m2)
+        newV2 = (m1 * v1 + m2 * v2 - m1 * (v2 - v1)) / (m1 + m2)
+
+        ball1.vel += (newV1 - v1) * dir
+        ball2.vel += (newV2 - v2) * dir
+         
     
 

@@ -7,7 +7,8 @@ from vectors.vector2 import Vector2
 
 
 class Scene:
-    def __init__(self,
+    def __init__(
+        self,
         world_size: Vector2
     ):
         self.world_size = world_size
@@ -22,4 +23,23 @@ class Scene:
             mass = math.pi * (radius ** 2)
             pos = Vector2(random.uniform(radius, w - radius), random.uniform(radius, h - radius))
             vel = Vector2(random.uniform(-100.0, 100.0), random.uniform(-100.0, 100.0))
+            self.balls.append(Ball(radius, mass, pos, vel))
+            
+class PlanetScene:
+    def __init__(
+        self,
+        world_size: Vector2,
+        ball_amt
+    ):
+        self.world_size = world_size
+        self.balls = []
+        self.ball_amt = ball_amt
+    def setup_scene(self):
+        self.balls = []
+        w, h = self.world_size.x, self.world_size.y
+        for _ in range(self.ball_amt):
+            radius = 20
+            mass = math.pi * (radius ** 2)
+            pos = Vector2(random.uniform(radius, w - radius), random.uniform(radius, h - radius))
+            vel = Vector2(100, 100)
             self.balls.append(Ball(radius, mass, pos, vel))
